@@ -43,6 +43,7 @@ twitch.on("raw_message", (messageCloned, message) => {
     }
 
     // preparar para executar comandos
+    let is_moderator = message.tags["badges"].indexOf("moderator") != -1;
     let is_highlight = message.tags["msg-id"] == 'highlighted-message';
     let channel = message.params[0];
     let params = message.params[1].slice(1).split(' ');
@@ -52,6 +53,7 @@ twitch.on("raw_message", (messageCloned, message) => {
     commands.emit(command, params, {
         is_twitch: true,
         is_discord: false,
+        is_moderator: is_moderator,
         send: (text) => {
             twitch.say (channel, text);
         }
@@ -67,8 +69,10 @@ discord.on('message', (message) => {
     if (message.content[0] != "!") {
         return;
     }
+    console.log(message.author);
 
     // preparar para executar comandos
+    let is_moderator = message.member.roles.cache.has("763399481332334683");
     let params = message.content.slice(1).split(' ');
     let command = params.shift().toLowerCase(); 
 
@@ -76,6 +80,7 @@ discord.on('message', (message) => {
     commands.emit(command, params, {
         is_twitch: false,
         is_discord: true,
+        is_moderator: is_moderator,
         send: (text) => {
             message.reply(text);
         }
