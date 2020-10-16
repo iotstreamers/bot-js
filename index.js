@@ -38,7 +38,7 @@ discord.on('ready', () => {
  */
 twitch.on("raw_message", (messageCloned, message) => {
     // ignorar quando não for uma menssagem no chat ou comando
-    if (message.command != "PRIVMSG" || message.params[0][0] != "!") {
+    if (message.command != "PRIVMSG" || message.params[1][0] != "!") {
         return;
     }
 
