@@ -7,6 +7,7 @@
  * 
  */
 const DiscordConnect = require('discord.js');
+const commands = require('./src/commands.js');
 const tmi = require('tmi.js');
 const fs = require('fs');
 
@@ -18,22 +19,65 @@ const twitch = new tmi.client(configuration.twitch_options);
 const discord = new DiscordConnect.Client();
 
 /**
- * @description Eventos de carregamento
+ * @description Conexão com as APIS
  */
-discord.on('ready', () => {
-    console.log(`Discord Ready!`);
-    console.log(`Logged in as ${discord.user.tag}!`);
-});
+twitch.connect();
 
 twitch.on("connected", () => {
     console.log(`Twitch Ready!`);
+    discord.login(configuration.bot_discord_token);   
+});
+
+discord.on('ready', () => {
+    console.log(`Discord Ready!`);
 });
 
 /**
- * @description Concetar nas apis
- * 
- * @api twitch
- * @api discord
+ * @description Quando alguem envia menssagem pela twitch
+ * @see raw_message tem os dados brutos de qualquer evento de chat da live (messangem, highlight, host, raid)
  */
-discord.login(configuration.bot_discord_token);
-twitch.connect();
+twitch.on("raw_message", (messageCloned, message) => {
+    // ignorar quando não for uma menssagem no chat ou comando
+    if (message.command != "PRIVMSG" || message.params[0][0] != "!") {
+        return;
+    }
+
+    // preparar para executar comandos
+    let is_highlight = message.tags["msg-id"] == 'highlighted-message';
+    let channel = message.params[0];
+    let params = message.params[1].slice(1).split(' ');
+    let command = params.shift().toLowerCase(); 
+    
+    // chamar evento
+    commands.emit(command, params, {
+        is_twitch: true,
+        is_discord: false,
+        send: (text) => {
+            twitch.say (channel, text);
+        }
+    });   
+});
+
+/**
+ * @description Quando alguem envia menssagem pelo discord
+ * @see message retorna objeto com api do discord para responder a menssagem
+ */
+discord.on('message', (message) => {
+    // ignorar quando não for um comando
+    if (message.content[0] != "!") {
+        return;
+    }
+
+    // preparar para executar comandos
+    let params = message.content.slice(1).split(' ');
+    let command = params.shift().toLowerCase(); 
+
+    // chamar evento
+    commands.emit(command, params, {
+        is_twitch: false,
+        is_discord: true,
+        send: (text) => {
+            message.reply(text);
+        }
+    });
+});
