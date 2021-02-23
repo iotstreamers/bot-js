@@ -21,12 +21,10 @@ command.on("sh-iot", (params, message) => {
     message.reply("Vamos divulgar a galera!");
 
     for (const index in message.channels) {
-        if (message.is_discord) {
-            message.send(`https://twitch.tv/${message.channels[index]}`);
-        }
-        else if(message.is_twitch) {
-            message.send(`!sh-so ${message.channels[index]}`);
-        }
+        message.send(message.is_discord?
+            `https://twitch.tv/${message.channels[index]}`:
+            `!sh-so ${message.channels[index]}`
+        );
     }
 });
 

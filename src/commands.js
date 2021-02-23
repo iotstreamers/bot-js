@@ -33,7 +33,7 @@ command.on("github", (params, message) => {
 });
 
 command.on("source", (params, message) => {
-    message.send("Confira o meu código fonte: https://github.com/iotstreamers/discord-bot");
+    message.send("Confira o meu código fonte: https://github.com/iotstreamers/bot-js");
 });
 
 module.exports = command;
