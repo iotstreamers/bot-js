@@ -8,6 +8,7 @@
  */
 const DiscordConnect = require('discord.js');
 const commands = require('./src/commands.js');
+const modcmds = require('./src/moderation.js');
 const tmi = require('tmi.js');
 const fs = require('fs');
 
@@ -42,22 +43,38 @@ twitch.on("raw_message", (messageCloned, message) => {
         return;
     }
 
-    // preparar para executar comandos
-    let is_moderator = message.tags["badges"].indexOf("moderator") != -1;
-    let is_highlight = message.tags["msg-id"] == 'highlighted-message';
+    // preparar para executar comand
+    let is_moderator = typeof(message.tags["badges"]) == 'string' && (message.tags["badges"].indexOf("moderator") != -1 || message.tags["badges"].indexOf("broadcaster") != -1);
     let channel = message.params[0];
     let params = message.params[1].slice(1).split(' ');
     let command = params.shift().toLowerCase(); 
+    let author = message.tags['display-name'];
+
+    // não possui permissão
+    if (modcmds.handlersCount(command) && !is_moderator) {
+        twitch.say(channel, `@${author}, Você não é um moderador!`);
+        return;
+    } 
     
-    // chamar evento
+    // executar comando
     commands.emit(command, params, {
         is_twitch: true,
         is_discord: false,
         is_moderator: is_moderator,
-        send: (text) => {
-            twitch.say (channel, text);
-        }
-    });   
+        reply: (text) => twitch.say(channel, `@${author}, ${text}`),
+        send: (text) => twitch.say(channel, text),
+        channels: configuration.twitch_options.channels.map((channel) => channel.slice(1))
+    });
+    
+    // executar comando administrativo
+    modcmds.emit(command, params, {
+        is_twitch: true,
+        is_discord: false,
+        is_moderator: is_moderator,
+        reply: (text) => twitch.say(channel, `@${author}, ${text}`),
+        send: (text) => twitch.say(channel, text),
+        channels: configuration.twitch_options.channels.map((channel) => channel.slice(1))
+    });
 });
 
 /**
@@ -69,20 +86,35 @@ discord.on('message', (message) => {
     if (message.content[0] != "!") {
         return;
     }
-    console.log(message.author);
 
     // preparar para executar comandos
     let is_moderator = message.member.roles.cache.has("763399481332334683");
     let params = message.content.slice(1).split(' ');
     let command = params.shift().toLowerCase(); 
 
-    // chamar evento
+    // não possui permissão
+    if (modcmds.handlersCount(command) && !is_moderator) {
+        message.reply("Você não é um moderador!");
+        return;
+    } 
+
+    // executar comando
     commands.emit(command, params, {
         is_twitch: false,
         is_discord: true,
         is_moderator: is_moderator,
-        send: (text) => {
-            message.reply(text);
-        }
+        reply: (text) => message.reply(text),
+        send: (text) => message.channel.send(text),
+        channels: configuration.twitch_options.channels.map((channel) => channel.slice(1))
+    });
+
+    // executar comando administrativo
+    modcmds.emit(command, params, {
+        is_twitch: false,
+        is_discord: true,
+        is_moderator: is_moderator,
+        reply: (text) => message.reply(text),
+        send: (text) => message.channel.send(text),
+        channels: configuration.twitch_options.channels.map((channel) => channel.slice(1))
     });
 });
