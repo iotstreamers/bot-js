@@ -9,6 +9,7 @@
 require('dotenv').config()
 const channels = process.env.TWITCH_CHANNELS.split(',');
 const DiscordConnect = require('discord.js');
+const express = require('express')
 const tmi = require('tmi.js');
 const fs = require('fs');
 const discord = {};
@@ -22,6 +23,24 @@ console.log(fs.readFileSync('startup.txt', 'utf8').toString());
 /**
  * @description Carregamento assicrono das API's
  */
+delete new Promise(async (resolve) => {
+    const api = express()
+    // não instanciar endpoint de status
+    if (typeof(process.env.COMMON_API_PORT) == 'undefined') {
+        resolve(console.log(' > api status offline'));
+        return;
+    }
+    
+    // estado de funcionamento
+    api.get('/', (req, res) => {
+        res.send('ok');
+    });
+
+    // acesso para api
+    api.listen(process.env.COMMON_API_PORT, () => {
+        resolve(console.log(' > api status online'));
+    });
+});
 discord.promise = new Promise(async (resolve) => {
     discord.client = new DiscordConnect.Client();
     resolve(console.log(' > loading discord client'));

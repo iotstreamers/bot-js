@@ -47,6 +47,9 @@ $ node bot.js
 #### Configurando ambiente ####
 Configure o arquivo '.env' de acordo com seu ambiente.
 ```ENV
+# COMMON CONFIGS #
+COMMON_API_PORT = 80
+
 # DISCORD ENVIRONMENT CONFIG #
 DISCORD_COMMAND_PREFIX = !
 DISCORD_SECRET_TOKEN = NzY....
