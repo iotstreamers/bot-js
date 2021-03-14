@@ -26,7 +26,7 @@ console.log(fs.readFileSync('startup.txt', 'utf8').toString());
 delete new Promise(async (resolve) => {
     const api = express()
     // não instanciar endpoint de status
-    if (typeof(process.env.COMMON_API_PORT) == 'undefined') {
+    if (typeof(process.env.PORT) == 'undefined' && typeof(process.env.COMMON_API_PORT) == 'undefined') {
         resolve(console.log(' > api status offline'));
         return;
     }
@@ -37,7 +37,7 @@ delete new Promise(async (resolve) => {
     });
 
     // acesso para api
-    api.listen(process.env.COMMON_API_PORT, () => {
+    api.listen(process.env.PORT || process.env.COMMON_API_PORT, () => {
         resolve(console.log(' > api status online'));
     });
 });
