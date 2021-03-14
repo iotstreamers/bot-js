@@ -6,6 +6,7 @@
   "dependencies": {
     "discord.js": "^12.5.1",
     "dotenv": "^8.2.0",
+    "express": "^4.17.1",
     "simple-event-bus": "^1.0.1",
     "tmi.js": "^1.7.2"
   }
