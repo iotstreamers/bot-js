@@ -26,7 +26,7 @@ console.log(fs.readFileSync('startup.txt', 'utf8').toString());
 delete new Promise(async (resolve) => {
     const api = express()
     // não instanciar endpoint de status
-    if (typeof(process.env.PORT) == 'undefined' && typeof(process.env.COMMON_API_PORT) == 'undefined') {
+    if (!process.env.PORT && !process.env.COMMON_API_PORT) {
         resolve(console.log(' > api status offline'));
         return;
     }
@@ -64,11 +64,11 @@ twitch.promise = new Promise(async (resolve) => {
  */
 discord.promise.then(async () => {
     await discord.client.login(process.env.DISCORD_SECRET_TOKEN);
-    console.log(` > discord connected.`);
+    console.log(` > discord connected`);
 });
 twitch.promise.then(async () => {
     await twitch.client.connect();
-    console.log(` > twitch connected.`);
+    console.log(` > twitch connected`);
 });
 
 
@@ -104,7 +104,7 @@ discord.promise.then(async () => {
         commands.forEach((command) => {
             // verificar pelas permissões
             if (command.event.handlersCount(cmdtext) && command.permit.length) {
-                if(!command.permit.find(tag => (message.member.roles.cache.has(tag)))) {
+                if(!message.member || !command.permit.find(tag => (message.member.roles.cache.has(tag)))) {
                     message.reply(`Você não tem permissão para executar esse comando!`);
                     return;
                 }
@@ -159,14 +159,7 @@ twitch.promise.then(async () => {
         commands.forEach((command) => {
             // verificar pelas permissões
             if (command.event.handlersCount(cmdtext) && command.permit.length) {
-                // não possui nenhuma tag
-                if(typeof(message.tags["badges"]) != 'string'){
-                    twitch.client.say(channel, `@${author}, Você não tem permissão para executar esse comando!`);
-                    return;
-                }
-                
-                // se possui tag necessária
-                if(!command.permit.find(tag => (message.tags["badges"].includes(tag)))) {
+                if(!message.tags["badges"] && !command.permit.find(tag => (message.tags["badges"].includes(tag)))) {
                     twitch.client.say(channel, `@${author}, Você não tem permissão para executar esse comando!`);
                     return;
                 }
