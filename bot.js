@@ -116,6 +116,7 @@ discord.promise.then(async () => {
                 is_discord: true,
                 reply: (text) => message.reply(text),
                 send: (text) => message.channel.send(text),
+                warn: (text) => message.channel.send(`*${text}*`),
                 channels: channels
             });
         });
@@ -171,6 +172,11 @@ twitch.promise.then(async () => {
                 is_discord: false,
                 reply: (text) => twitch.client.say(channel, `@${author}, ${text}`),
                 send: (text) => twitch.client.say(channel, text),
+                warn: (text) => {
+                    twitch.client.say(channel, `/color red`);
+                    twitch.client.say(channel, `/me ${text}`);
+                    twitch.client.say(channel, `/color blue`);
+                },
                 channels: channels
             });
         });
