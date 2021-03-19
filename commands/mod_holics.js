@@ -15,9 +15,12 @@ const command = new EventBus();
 
 command.on("sh-iot", (params, message) => {
     message.reply("Vamos divulgar a galera!");
-    for (const channel of message.channels) {
-        message.send(message.is_discord?`https://twitch.tv/${channel}`: `!sh-so @${channel}`);
-    }
+    message.channels.forEach((channel, index) => setTimeout(() => message.send(message.is_discord?
+            `https://twitch.tv/${channel}`:
+            `!sh-so @${channel}`
+        ), 
+        index * 400
+    ));
 });
 
 module.exports = {
